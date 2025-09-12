@@ -43,6 +43,8 @@ Run this command for `gu` alias:
 git config --global alias.unadd reset HEAD
 ```
 
+*Note:* Recommended to use either kitty terminal or nerdpatched fonts to display language icons in the prompt when using with `mise`.
+
 ## Updating
 
 To update kysh to the latest version, run:
