@@ -1,9 +1,5 @@
 KYSH_PATH="${0:A:h}"
 
-if [[ -z ${TMUX+X}${ZSH_SCRIPT+X}${ZSH_EXECUTION_STRING+X} ]];then
-  tmux attach || tmux new -s kyhyco -n home
-fi
-
 source "$KYSH_PATH/alias.zsh"
 source "$KYSH_PATH/settings.zsh"
 source "$KYSH_PATH/powerlevel10k-theme.zsh"
