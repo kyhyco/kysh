@@ -21,21 +21,28 @@ fi
       return
     fi
 
+    local whitelist=(node python go ruby rust)
+
     local plugins=("${(@f)$(mise ls --current --offline 2>/dev/null | awk '!/\(symlink\)/ && $3!="~/.tool-versions" && $3!="~/.config/mise/config.toml" && $3!="(missing)" {if ($1) print $1, $2}')}")
     local plugin
     local isFirstPlugin=true
 
     for plugin in ${(k)plugins}; do
       local parts=("${(@s/ /)plugin}")
-      local tool=${(U)parts[1]}
+      local tool=${parts[1]}
       local version=${parts[2]}
 
-      if $isFirstPlugin; then
-        p10k segment -t "via"
-        isFirstPlugin=false
-      fi
+      # Only display whitelisted languages
+      if [[ ${whitelist[(ie)$tool]} -le ${#whitelist} ]]; then
+        local tool_upper=${(U)tool}
 
-      p10k segment -r -i "${tool}_ICON" -s $tool -t "$version"
+        if $isFirstPlugin; then
+          p10k segment -t "via"
+          isFirstPlugin=false
+        fi
+
+        p10k segment -r -i "${tool_upper}_ICON" -s $tool_upper -t "$version"
+      fi
     done
   }
 
