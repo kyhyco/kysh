@@ -34,7 +34,8 @@ exec zsh
 Install additional external dependencies:
 
 ```bash
-brew install fzf eza fd tree lazygit
+brew install fzf eza fd tree lazygit gh
+gh extension install kyhyco/gh-fh
 ```
 
 Run this command for `gu` alias:
