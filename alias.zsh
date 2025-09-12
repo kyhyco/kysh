@@ -10,6 +10,20 @@ alias sz='exec zsh' # wipes all temporary variables. source zsh doesn't do that
 alias ez='($EDITOR ~/.zshrc)'
 alias ezz='($EDITOR $KYSH_PATH)'
 
+# kysh update
+kysh-update() {
+    local kysh_config_path="$HOME/.config/kysh"
+    if [[ -d "$kysh_config_path" ]]; then
+        echo "Updating kysh configuration..."
+        (cd "$kysh_config_path" && git pull --recurse-submodules)
+        echo "kysh updated successfully!"
+        echo "Run 'sz' to reload your shell configuration."
+    else
+        echo "Error: kysh configuration directory not found at $kysh_config_path"
+        return 1
+    fi
+}
+
 # shorthands
 alias tree='tree -C'
 alias q='exit'

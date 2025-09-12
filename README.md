@@ -43,6 +43,16 @@ Run this command for `gu` alias:
 git config --global alias.unadd reset HEAD
 ```
 
+## Updating
+
+To update kysh to the latest version, run:
+
+```bash
+kysh-update
+```
+
+This will pull the latest changes and update all submodules. After updating, reload your shell with `sz`.
+
 ## Dependencies
 
 ### Git Submodules
