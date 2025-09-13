@@ -4,44 +4,65 @@ fi
 
 () {
   function prompt_mise() {
-    # Check if mise.toml exists in current directory or ancestors
-    local current_dir="$PWD"
-    local has_mise_toml=false
+    emulate -L zsh
+    setopt pipefail no_aliases
 
-    while [[ "$current_dir" != "$HOME" ]]; do
-      if [[ -f "$current_dir/mise.toml" ]]; then
-        has_mise_toml=true
+    # Find the closest mise.toml walking up from $PWD, but stop at $HOME
+    local dir="$PWD" closest_mise_toml=""
+    while [[ "$dir" != "/" && "$dir" != "$HOME" ]]; do
+      if [[ -f "$dir/mise.toml" ]]; then
+        closest_mise_toml="$dir/mise.toml"
         break
       fi
-      current_dir="$(dirname "$current_dir")"
+      dir="${dir:h}"  # dirname in zsh
     done
 
-    # Only show segment if mise.toml is found and not in home directory
-    if [[ $has_mise_toml == false ]] || [[ $PWD == $HOME ]]; then
-      return
-    fi
+    # No project mise.toml found (or we're at $HOME) → render nothing
+    [[ -n "$closest_mise_toml" ]] || return
 
-    local whitelist=(node python go ruby rust)
+    # Pull active tools ONLY from that closest mise.toml
+    #    - ignore global files (~/.tool-versions, ~/.config/mise/config.toml)
+    #    - only take entries whose source.path == closest file
+    #    - output lines: "<tool> <version>" (or just "<tool>" if version is "")
+    local -a lines
+    lines=(${(f)"$(
+      mise ls --current --offline -J 2>/dev/null | jq -r --arg want "$closest_mise_toml" '
+        to_entries[] as $e
+        | $e.key as $tool
+        | $e.value[]
+        | select(.active)
+        | select(.source.path == $want)
+        | select(.source.path != "(missing)")
+        | if (.version | length) > 0
+            then "\($tool) \(.version)"
+            else "\($tool)"
+          end
+      '
+    )"})
 
-    local plugins=("${(@f)$(mise ls --current --offline 2>/dev/null | awk '!/\(symlink\)/ && $3!="~/.tool-versions" && $3!="~/.config/mise/config.toml" && $3!="(missing)" {if ($1) print $1, $2}')}")
-    local plugin
-    local isFirstPlugin=true
+    # Whitelist of tools to show
+    local -a whitelist=(node python go ruby rust)
 
-    for plugin in ${(k)plugins}; do
-      local parts=("${(@s/ /)plugin}")
-      local tool=${parts[1]}
-      local version=${parts[2]}
+    # Render segments (skip empty versions)
+    local isFirst=true
+    local line tool version tool_upper
+    for line in $lines; do
+      # split "tool [version]" → parts[1]=tool, parts[2]=version (if present)
+      local -a parts
+      parts=(${=line})
+      tool="${parts[1]}"
+      version="${parts[2]}"
 
-      # Only display whitelisted languages
-      if [[ ${whitelist[(ie)$tool]} -le ${#whitelist} ]]; then
-        local tool_upper=${(U)tool}
-
-        if $isFirstPlugin; then
-          p10k segment -t "via"
-          isFirstPlugin=false
+      # show only if whitelisted and version present
+      if (( ${whitelist[(Ie)$tool]} )); then
+        if [[ -n "$version" ]]; then
+          tool_upper="${(U)tool}"
+          if $isFirst; then
+            p10k segment -t "via"
+            isFirst=false
+          fi
+          p10k segment -r -i "${tool_upper}_ICON" -s "$tool_upper" -t "$version"
         fi
-
-        p10k segment -r -i "${tool_upper}_ICON" -s $tool_upper -t "$version"
       fi
     done
   }

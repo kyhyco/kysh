@@ -34,7 +34,7 @@ exec zsh
 Install additional external dependencies:
 
 ```bash
-brew install fzf eza fd tree lazygit gh
+brew install fzf eza fd tree lazygit gh jq
 gh extension install kyhyco/gh-fh
 ```
 
