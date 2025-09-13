@@ -21,7 +21,7 @@ fi
     # - ignore global files (~/.tool-versions, ~/.config/mise/config.toml)
     # - only take entries whose source.path == closest file
     # - output lines: "<tool> <version>" (or just "<tool>" if version is "")
-    # - if a language needs to be installed display "inactive"
+    # - if a language needs to be installed display "missing"
     local -a lines
     lines=(${(f)"$(
       mise ls --current --offline -J 2>/dev/null | jq -r --arg want "$closest_mise_toml" '
