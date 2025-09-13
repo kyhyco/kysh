@@ -4,12 +4,9 @@ fi
 
 () {
   function prompt_mise() {
-    emulate -L zsh
-    setopt pipefail no_aliases
-
     # Find the closest mise.toml walking up from $PWD, but stop at $HOME
     local dir="$PWD" closest_mise_toml=""
-    while [[ "$dir" != "/" && "$dir" != "$HOME" ]]; do
+    while [[ "$dir" != "$HOME" ]]; do
       if [[ -f "$dir/mise.toml" ]]; then
         closest_mise_toml="$dir/mise.toml"
         break
@@ -21,21 +18,24 @@ fi
     [[ -n "$closest_mise_toml" ]] || return
 
     # Pull active tools ONLY from that closest mise.toml
-    #    - ignore global files (~/.tool-versions, ~/.config/mise/config.toml)
-    #    - only take entries whose source.path == closest file
-    #    - output lines: "<tool> <version>" (or just "<tool>" if version is "")
+    # - ignore global files (~/.tool-versions, ~/.config/mise/config.toml)
+    # - only take entries whose source.path == closest file
+    # - output lines: "<tool> <version>" (or just "<tool>" if version is "")
+    # - if a language needs to be installed display "inactive"
     local -a lines
     lines=(${(f)"$(
       mise ls --current --offline -J 2>/dev/null | jq -r --arg want "$closest_mise_toml" '
         to_entries[] as $e
         | $e.key as $tool
         | $e.value[]
-        | select(.active)
         | select(.source.path == $want)
-        | select(.source.path != "(missing)")
-        | if (.version | length) > 0
-            then "\($tool) \(.version)"
-            else "\($tool)"
+        | if .active then
+            if (.version|length) > 0
+              then "\($tool) \(.version)"
+              else "\($tool)"
+            end
+          else
+            "\($tool) missing"
           end
       '
     )"})
@@ -54,15 +54,13 @@ fi
       version="${parts[2]}"
 
       # show only if whitelisted and version present
-      if (( ${whitelist[(Ie)$tool]} )); then
-        if [[ -n "$version" ]]; then
-          tool_upper="${(U)tool}"
-          if $isFirst; then
-            p10k segment -t "via"
-            isFirst=false
-          fi
-          p10k segment -r -i "${tool_upper}_ICON" -s "$tool_upper" -t "$version"
+      if (( ${whitelist[(Ie)$tool]} )) && [[ -n "$version" ]]; then
+        tool_upper="${(U)tool}"
+        if $isFirst; then
+          p10k segment -t "via"
+          isFirst=false
         fi
+        p10k segment -r -i "${tool_upper}_ICON" -s "$tool_upper" -t "$version"
       fi
     done
   }
