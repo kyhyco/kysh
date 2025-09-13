@@ -4,6 +4,7 @@ source "$KYSH_PATH/alias/alias-git.zsh"
 source "$KYSH_PATH/alias/alias-docker.zsh"
 source "$KYSH_PATH/alias/alias-navigation.zsh"
 source "$KYSH_PATH/alias/alias-at.zsh"
+source "$KYSH_PATH/alias/alias-fzf.zsh"
 
 # editing
 alias sz='exec zsh' # wipes all temporary variables. source zsh doesn't do that
