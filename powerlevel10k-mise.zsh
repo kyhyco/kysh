@@ -4,6 +4,19 @@ fi
 
 () {
   function prompt_mise() {
+    local dir="$PWD"
+    local closest_mise_toml=""
+    while [[ "$dir" != "$HOME" ]]; do
+      if [[ -f "$dir/mise.toml" ]]; then
+        closest_mise_toml="$dir/mise.toml"
+        break
+      fi
+      dir="${dir:h}"  # dirname in zsh
+    done
+
+    # No project mise.toml found (or we're at $HOME) → render nothing
+    [[ -n "$closest_mise_toml" ]] || return
+
     local lines=(${(f)"$(
       mise ls --current --offline -l -J 2>/dev/null | jq -r '
         to_entries[] as $e
