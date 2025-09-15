@@ -18,10 +18,11 @@ fi
     [[ -n "$closest_mise_toml" ]] || return
 
     local lines=(${(f)"$(
-      mise ls --current --offline -l -J 2>/dev/null | jq -r '
+      mise ls --current --offline -l -J 2>/dev/null | jq -r --arg home "$HOME" '
         to_entries[] as $e
         | $e.key as $tool
         | $e.value[]
+        | select(.source.path != ($home + "/mise.toml"))
         | if .active then
             "\($tool) \(.version)"
           else
