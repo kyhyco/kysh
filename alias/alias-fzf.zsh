@@ -33,7 +33,6 @@ ff () {
     -o -type d -print 2>/dev/null | fzf +m)
   if [[ -n $dir ]]; then
     cd "$dir"
-    exec clear
   fi
 }
 
