@@ -5,6 +5,11 @@ docker-ps-fzf() {
 alias ds="docker-ps-fzf | xargs docker stop"
 alias de="docker-ps-fzf | xargs echo -n | awk '{ print \$1 \" /bin/bash\"}' | xargs -o docker exec -it"
 
+dnuke() {
+  docker kill $(docker ps -q)
+  docker system prune -a
+}
+
 compose-ps-fzf() {
   docker-compose ps | fzf +m --layout=reverse --header-lines=1 --preview-window=right,50%,cycle --preview="docker inspect {1} | bat --color always -l json --plain" | awk '{print $1}'
 }
